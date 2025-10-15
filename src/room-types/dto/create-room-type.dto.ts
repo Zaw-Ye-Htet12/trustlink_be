@@ -5,6 +5,7 @@ import {
   IsArray,
   Min,
   MaxLength,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateRoomTypeDto {
@@ -30,9 +31,14 @@ export class CreateRoomTypeDto {
   @MaxLength(255)
   address?: string;
 
+  @IsArray()
+  @IsDateString({}, { each: true })
+  available_dates?: string[];
+
   @IsOptional()
-  @IsString()
-  amenities?: string;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  amenityIds?: number[];
 
   @IsOptional()
   @IsArray()

@@ -9,28 +9,52 @@ export class RoomTypeRepository extends Repository<RoomType> {
   }
 
   async findAllRoomTypes(): Promise<RoomType[]> {
-    return this.find();
+    return this.find({
+      relations: ['amenities'],
+    });
   }
 
   async findRoomTypeById(id: number): Promise<RoomType | null> {
     return this.findOne({
       where: { room_type_id: id },
-      relations: ['availability'],
+      relations: ['amenities'],
+    });
+  }
+  async findRoomTypeByName(name: string): Promise<RoomType | null> {
+    return this.findOne({
+      where: { name },
+      relations: ['amenities'],
     });
   }
 
-  async findAvailableRooms(
-    startDate: Date,
-    endDate: Date,
+  async findAvailableRoomsByDateRange(
+    startDate: string,
+    endDate: string,
   ): Promise<RoomType[]> {
-    return this.createQueryBuilder('room')
-      .leftJoinAndSelect('room.availability', 'availability')
-      .where('availability.date BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      })
-      .andWhere('availability.is_available = :available', { available: true })
-      .getMany();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      throw new Error('Invalid date range');
+    }
+
+    // Load all rooms (with amenities)
+    const allRooms = await this.find({ relations: ['amenities'] });
+
+    // Filter rooms that have at least one available date within the range
+    return allRooms.filter((room) => {
+      if (!room.available_dates || room.available_dates.length === 0) {
+        return false;
+      }
+
+      // Convert stored dates to Date objects for comparison
+      const availableDates = room.available_dates.map(
+        (d) => new Date(d.split('T')[0]),
+      );
+
+      // Check if there is at least one date in range
+      return availableDates.some((date) => date >= start && date <= end);
+    });
   }
 
   async insertRoomType(roomType: Partial<RoomType>): Promise<RoomType> {

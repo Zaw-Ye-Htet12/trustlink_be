@@ -4,9 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
-import { RoomAvailability } from '../../src/room-availability/room-availability.entity';
+import { Amenity } from 'src/amenities/amenity.entity';
 
 @Entity('room_types')
 export class RoomType {
@@ -28,8 +29,8 @@ export class RoomType {
   @Column({ length: 255, nullable: true })
   address: string;
 
-  @Column({ type: 'text', nullable: true })
-  amenities: string;
+  @Column({ type: 'json', nullable: true })
+  available_dates: string[];
 
   @Column({ type: 'json', nullable: true })
   images: string[];
@@ -40,6 +41,14 @@ export class RoomType {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => RoomAvailability, (availability) => availability.roomType)
-  availability: RoomAvailability[];
+  @ManyToMany(() => Amenity, (amenity) => amenity.roomTypes)
+  @JoinTable({
+    name: 'room_type_amenities',
+    joinColumn: { name: 'room_type_id', referencedColumnName: 'room_type_id' },
+    inverseJoinColumn: {
+      name: 'amenity_id',
+      referencedColumnName: 'amenity_id',
+    },
+  })
+  amenities: Amenity[];
 }
