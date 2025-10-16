@@ -1,33 +1,32 @@
 import {
-  IsBoolean,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 export class CreateUserDto {
-  @IsNotEmpty()
-  @IsString()
-  name: string;
-
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
+  @IsString()
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  username: string;
 
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @IsOptional()
-  @IsString()
-  role?: string; // 'admin' | 'organizer'
-
-  @IsBoolean()
-  @IsOptional()
-  isAdmin?: boolean;
+  @IsEnum(UserRole)
+  @IsNotEmpty()
+  role: UserRole;
 }

@@ -1,32 +1,34 @@
+import { PartialType } from '@nestjs/mapped-types';
 import {
-  IsBoolean,
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { CreateUserDto } from './create-user.dto';
 
-export class UpdateUserDto {
-  @IsString()
-  name: string;
-
-  @IsEmail()
-  email: string;
-
-  @MinLength(6)
-  password: string;
+// Option 1: Use PartialType to automatically make all CreateUserDto fields optional
+export class UpdateUserDto extends PartialType(CreateUserDto) {
+  @IsOptional()
+  @IsEmail({}, { message: 'Invalid email format' })
+  email?: string;
 
   @IsOptional()
-  @IsString()
-  phone?: string;
+  @IsString({ message: 'Password must be a string' })
+  @MinLength(6, { message: 'Password must be at least 6 characters' })
+  password?: string;
 
   @IsOptional()
-  @IsString()
-  role?: string;
+  @IsString({ message: 'Username must be a string' })
+  username?: string;
 
-  @IsBoolean()
   @IsOptional()
-  isAdmin?: boolean;
+  @IsString({ message: 'Phone must be a string' })
+  phone_no?: string;
 
-  hashedRt?: string | null;
+  @IsOptional()
+  @IsEnum(UserRole, { message: 'Role must be either customer or agent' })
+  role?: UserRole;
 }

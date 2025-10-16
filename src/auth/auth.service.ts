@@ -50,7 +50,7 @@ export class AuthService {
     const user = await this.userRepository.save(newUser);
 
     // Generate tokens
-    const tokens = await this.getTokens(user.user_id, user.email);
+    const tokens = await this.getTokens(user.id, user.email);
 
     return tokens;
   }
@@ -60,10 +60,10 @@ export class AuthService {
     const user = await this.userRepository.findByEmail(dto.email);
     if (!user) throw new ForbiddenException('Invalid credentials');
 
-    const pwMatches = await bcrypt.compare(dto.password, user.password);
+    const pwMatches = await bcrypt.compare(dto.password, user.password_hash);
     if (!pwMatches) throw new ForbiddenException('Invalid credentials');
 
-    const tokens = await this.getTokens(user.user_id, user.email);
+    const tokens = await this.getTokens(user.id, user.email);
 
     return tokens;
   }
@@ -82,7 +82,7 @@ export class AuthService {
     if (!user) throw new ForbiddenException('Access Denied');
 
     // Generate new tokens
-    const tokens = await this.getTokens(user.user_id, user.email);
+    const tokens = await this.getTokens(user.id, user.email);
 
     return tokens;
   }

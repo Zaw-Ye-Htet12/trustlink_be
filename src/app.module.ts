@@ -6,10 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
 import { UsersModule } from './users/user.module';
 import { AuthModule } from './auth/auth.module';
-import { RoomTypeModule } from './room-types/room-type.module';
-// import { RoomAvailabilityModule } from './room-availability/room-availability.module';
-import { AmenityModule } from './amenities/amenity.module';
-import { BookingModule } from './bookings/booking.module';
+import { CustomerModule } from './customer/customer.module';
+import { AgentModule } from './agent/agent.module';
 
 @Module({
   imports: [
@@ -21,10 +19,8 @@ import { BookingModule } from './bookings/booking.module';
     }),
     UsersModule,
     AuthModule,
-    RoomTypeModule,
-    // RoomAvailabilityModule,
-    AmenityModule,
-    BookingModule,
+    CustomerModule,
+    AgentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

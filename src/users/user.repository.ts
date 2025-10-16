@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { User } from './user.entity';
+import { UserRole } from 'src/common/enums/user-role.enum';
+
+export interface FindUsersOptions {
+  role?: UserRole;
+  search?: string;
+  skip?: number;
+  take?: number;
+  isActive?: boolean;
+}
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -20,11 +29,34 @@ export class UserRepository extends Repository<User> {
   }
 
   async findUserById(id: number): Promise<User | null> {
-    return this.findOne({ where: { user_id: id } });
+    return this.findOne({ where: { id } });
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.findOne({ where: { email } });
+  }
+
+  async findUsers(options: FindUsersOptions): Promise<[User[], number]> {
+    const { role, search, skip = 0, take = 10, isActive } = options;
+    const queryBuilder = this.createQueryBuilder('users');
+
+    if (role) {
+      queryBuilder.andWhere('users.role = :role', { role });
+    }
+
+    if (isActive !== undefined) {
+      queryBuilder.andWhere('users.isActive = :isActive', { isActive });
+    }
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(users.username LIKE :search OR users.email LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    queryBuilder.orderBy('users.createdAt', 'DESC').skip(skip).take(take);
+    return queryBuilder.getManyAndCount();
   }
 
   // 🔹 UPDATE
