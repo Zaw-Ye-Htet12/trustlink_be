@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { RoomTypeModule } from './room-types/room-type.module';
 // import { RoomAvailabilityModule } from './room-availability/room-availability.module';
 import { AmenityModule } from './amenities/amenity.module';
+import { BookingModule } from './bookings/booking.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { AmenityModule } from './amenities/amenity.module';
     RoomTypeModule,
     // RoomAvailabilityModule,
     AmenityModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
