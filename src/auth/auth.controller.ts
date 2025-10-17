@@ -1,15 +1,27 @@
-import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  Get,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
+import { RegisterDto } from './dto/register';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtPayload } from './strategies/access_token.strategy';
 
 // Extend Express Request to include user property
 interface RequestWithUser extends Request {
   user: {
     sub: number;
     email: string;
+    role: UserRole;
   };
 }
 
@@ -17,18 +29,21 @@ interface RequestWithUser extends Request {
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Post('signup')
-  signup(@Body() dto: SignupDto) {
-    return this.authService.signup(dto);
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   refresh(@Req() req: RequestWithUser) {
     const userId = req.user.sub;
     return this.authService.refreshTokens(userId);
@@ -36,7 +51,27 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   logout() {
     return this.authService.logout();
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('verify')
+  @HttpCode(HttpStatus.OK)
+  verify(@Req() req: RequestWithUser) {
+    // The request.user is populated by AccessTokenStrategy
+    const user = req.user as JwtPayload;
+    return {
+      message: 'Token is valid',
+      user,
+    };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  async getProfile(@Req() req: RequestWithUser) {
+    const user = await this.authService.getCurrentUser(req.user.sub);
+    return user;
   }
 }

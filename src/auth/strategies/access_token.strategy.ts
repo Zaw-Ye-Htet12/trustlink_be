@@ -1,7 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '../../common/enums/user-role.enum'; // Import UserRole
+
+// Define the payload type for clarity
+export type JwtPayload = {
+  sub: number;
+  email: string;
+  role: UserRole; // Add role here, as it's in your JWT payload
+};
 
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -9,10 +17,15 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: config.get<string>('JWT_ACCESS_SECRET')!,
+      // ignoreExpiration: false, // Default is false, good for access tokens
     });
   }
 
-  validate(payload: { sub: number; email: string }) {
-    return payload; // Attaches to req.user
+  // Type the payload here
+  validate(payload: JwtPayload) {
+    if (!payload || !payload.sub) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+    return payload;
   }
 }
