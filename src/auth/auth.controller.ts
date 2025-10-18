@@ -14,7 +14,6 @@ import { Request } from 'express';
 import { RegisterDto } from './dto/register';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { AuthGuard } from '@nestjs/passport';
-import { JwtPayload } from './strategies/access_token.strategy';
 
 // Extend Express Request to include user property
 interface RequestWithUser extends Request {
@@ -54,18 +53,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   logout() {
     return this.authService.logout();
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('verify')
-  @HttpCode(HttpStatus.OK)
-  verify(@Req() req: RequestWithUser) {
-    // The request.user is populated by AccessTokenStrategy
-    const user = req.user as JwtPayload;
-    return {
-      message: 'Token is valid',
-      user,
-    };
   }
 
   @UseGuards(AuthGuard('jwt'))

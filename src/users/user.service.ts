@@ -6,34 +6,52 @@ import {
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
+
 import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
-import bcrypt from 'bcrypt';
-import { User } from './user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CustomerProfile } from 'src/customer/customer.entity';
-import { Repository } from 'typeorm';
-import { AgentProfile } from 'src/agent/agent.entity';
-import { UserRole } from 'src/common/enums/user-role.enum';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UserResponseDto } from 'src/auth/dto/user-response.dto';
+
+import { User } from './user.entity';
+import { CustomerProfile } from 'src/customer/customer.entity';
+import { AgentProfile } from 'src/agent/agent.entity';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+
     @InjectRepository(CustomerProfile)
     private readonly customerRepo: Repository<CustomerProfile>,
+
     @InjectRepository(AgentProfile)
     private readonly agentRepo: Repository<AgentProfile>,
   ) {}
 
-  // CREATE
+  /** ✅ Get public profile (safe fields only) */
+  async findPublicProfile(userId: number): Promise<Partial<User>> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId, is_active: true },
+      select: ['id', 'username', 'email', 'role', 'phone_no', 'created_at'],
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  /** ✅ Create a new user (agent or customer) */
   async create(dto: CreateUserDto): Promise<User> {
     const existing = await this.userRepository.findByEmail(dto.email);
     if (existing) throw new BadRequestException('Email already exists');
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    // Create new user entity
     const newUser = await this.userRepository.insertUser({
       ...dto,
       password_hash: hashedPassword,
@@ -41,56 +59,63 @@ export class UserService {
 
     try {
       if (dto.role === UserRole.CUSTOMER) {
-        const customer = this.customerRepo.create({ user: newUser });
-        await this.customerRepo.save(customer);
+        const customerProfile = this.customerRepo.create({
+          user: newUser,
+        });
+        await this.customerRepo.save(customerProfile);
       } else if (dto.role === UserRole.AGENT) {
-        const agent = this.agentRepo.create({ user: newUser });
-        await this.agentRepo.save(agent);
+        const agentProfile = this.agentRepo.create({
+          user: newUser,
+        });
+        await this.agentRepo.save(agentProfile);
       }
     } catch (error) {
+      // Rollback user if related profile fails
       await this.userRepository.deleteUser(newUser.id);
       throw new InternalServerErrorException(
-        `Failed to create user profile ${error}`,
+        `Failed to create user profile: ${error}`,
       );
     }
 
     return newUser;
   }
 
-  // READ ALL
+  /** ✅ Get all users (admin use) */
   async findAll(): Promise<User[]> {
     return this.userRepository.findAllUsers();
   }
 
-  // // READ ONE
+  /** ✅ Get one user by ID */
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findUserById(id);
     if (!user) throw new NotFoundException(`User with ID ${id} not found`);
     return user;
   }
 
-  // // UPDATE
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  /** ✅ Update user basic info */
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({ where: { id } });
 
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
 
+    // Validate email uniqueness
     if (updateUserDto.email && updateUserDto.email !== user.email) {
       const existingEmail = await this.userRepository.findByEmail(
         updateUserDto.email,
       );
-      if (existingEmail) {
-        throw new ConflictException('Email already exists');
-      }
+      if (existingEmail) throw new ConflictException('Email already exists');
     }
 
     Object.assign(user, updateUserDto);
     const updatedUser = await this.userRepository.save(user);
+
     return updatedUser;
   }
 
+  /** ✅ Change password securely */
   async changePassword(
     userId: number,
     changePasswordDto: ChangePasswordDto,
@@ -104,18 +129,14 @@ export class UserService {
     }
 
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    if (!user) throw new NotFoundException('User not found');
 
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
       user.password_hash,
     );
-
-    if (!isPasswordValid) {
+    if (!isPasswordValid)
       throw new UnauthorizedException('Current password is incorrect');
-    }
 
     user.password_hash = await bcrypt.hash(newPassword, 10);
     await this.userRepository.save(user);
@@ -123,9 +144,20 @@ export class UserService {
     return { message: 'Password changed successfully' };
   }
 
-  // // DELETE
-  async remove(id: number): Promise<void> {
-    const success = await this.userRepository.deleteUser(id);
-    if (!success) throw new NotFoundException(`User with ID ${id} not found`);
+  /** ✅ Deactivate (soft delete) user */
+  async deactivateAccount(userId: number): Promise<{ message: string }> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.is_active = false;
+    await this.userRepository.save(user);
+    return { message: 'Account deactivated' };
+  }
+
+  /** ✅ Delete user permanently (admin use only) */
+  async remove(id: number): Promise<{ message: string }> {
+    const deleted = await this.userRepository.deleteUser(id);
+    if (!deleted) throw new NotFoundException(`User with ID ${id} not found`);
+    return { message: 'User deleted successfully' };
   }
 }

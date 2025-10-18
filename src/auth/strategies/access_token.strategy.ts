@@ -17,7 +17,6 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: config.get<string>('JWT_ACCESS_SECRET')!,
-      // ignoreExpiration: false, // Default is false, good for access tokens
     });
   }
 

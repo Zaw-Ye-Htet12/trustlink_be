@@ -4,9 +4,12 @@ import {
   Column,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 import { User } from 'src/users/user.entity';
+import { Review } from 'src/review/review.entity';
+import { Service } from './service/service.entity';
 
 @Entity('agent_profiles')
 export class AgentProfile {
@@ -59,4 +62,10 @@ export class AgentProfile {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updated_at: Date;
+
+  @OneToMany(() => Service, (service) => service.agent)
+  services: Service[];
+
+  @OneToMany(() => Review, (review) => review.agent)
+  reviews: Review[];
 }

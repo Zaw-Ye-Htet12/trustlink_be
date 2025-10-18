@@ -1,3 +1,4 @@
+import { Review } from 'src/review/review.entity';
 import { User } from 'src/users/user.entity';
 import {
   Entity,
@@ -5,6 +6,7 @@ import {
   Column,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('customer_profiles')
@@ -31,4 +33,7 @@ export class CustomerProfile {
     default: () => 'CURRENT_TIMESTAMP',
   })
   created_at: Date;
+
+  @OneToMany(() => Review, (review) => review.customer)
+  reviews: Review[];
 }

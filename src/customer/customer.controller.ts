@@ -1,8 +1,21 @@
-import { Controller, Get, Param, Put, Delete, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Put,
+  Body,
+  Delete,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { CustomerService } from './customer.service';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('customers')
+@UseGuards(AuthGuard('jwt'))
 export class CustomerController {
   constructor(private readonly customerService: CustomerService) {}
 
@@ -12,17 +25,21 @@ export class CustomerController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.customerService.findById(id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.customerService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateCustomerDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateCustomerDto,
+  ) {
     return this.customerService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.customerService.remove(id);
   }
 }

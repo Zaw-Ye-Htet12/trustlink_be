@@ -3,14 +3,6 @@ import { IsOptional, IsString, IsNumber } from 'class-validator';
 export class UpdateAgentDto {
   @IsOptional()
   @IsString()
-  business_name?: string;
-
-  @IsOptional()
-  @IsString()
-  phone?: string;
-
-  @IsOptional()
-  @IsString()
   bio?: string;
 
   @IsOptional()

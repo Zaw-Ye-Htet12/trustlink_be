@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CustomerProfile } from './customer.entity';
 import { Repository } from 'typeorm';
+import { CustomerProfile } from './customer.entity';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Injectable()
@@ -11,11 +11,11 @@ export class CustomerService {
     private readonly customerRepo: Repository<CustomerProfile>,
   ) {}
 
-  async findAll() {
+  async findAll(): Promise<CustomerProfile[]> {
     return this.customerRepo.find({ relations: ['user'] });
   }
 
-  async findById(id: number) {
+  async findOne(id: number): Promise<CustomerProfile> {
     const customer = await this.customerRepo.findOne({
       where: { id },
       relations: ['user'],
@@ -24,14 +24,14 @@ export class CustomerService {
     return customer;
   }
 
-  async update(id: number, dto: UpdateCustomerDto) {
-    const customer = await this.findById(id);
+  async update(id: number, dto: UpdateCustomerDto): Promise<CustomerProfile> {
+    const customer = await this.findOne(id);
     Object.assign(customer, dto);
     return this.customerRepo.save(customer);
   }
 
-  async remove(id: number) {
-    const customer = await this.findById(id);
-    await this.customerRepo.remove(customer);
+  async remove(id: number): Promise<void> {
+    const result = await this.customerRepo.delete(id);
+    if (!result.affected) throw new NotFoundException('Customer not found');
   }
 }

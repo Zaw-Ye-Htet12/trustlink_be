@@ -8,6 +8,8 @@ import { UsersModule } from './users/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CustomerModule } from './customer/customer.module';
 import { AgentModule } from './agent/agent.module';
+import { ServiceModule } from './agent/service/service.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { AgentModule } from './agent/agent.module';
     AuthModule,
     CustomerModule,
     AgentModule,
+    ServiceModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

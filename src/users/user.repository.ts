@@ -45,7 +45,7 @@ export class UserRepository extends Repository<User> {
     }
 
     if (isActive !== undefined) {
-      queryBuilder.andWhere('users.isActive = :isActive', { isActive });
+      queryBuilder.andWhere('users.is_active = :isActive', { isActive });
     }
 
     if (search) {
@@ -55,7 +55,7 @@ export class UserRepository extends Repository<User> {
       );
     }
 
-    queryBuilder.orderBy('users.createdAt', 'DESC').skip(skip).take(take);
+    queryBuilder.orderBy('users.created_at', 'DESC').skip(skip).take(take);
     return queryBuilder.getManyAndCount();
   }
 
