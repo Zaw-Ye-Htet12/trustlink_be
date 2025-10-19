@@ -10,6 +10,7 @@ import { CustomerModule } from './customer/customer.module';
 import { AgentModule } from './agent/agent.module';
 import { ServiceModule } from './agent/service/service.module';
 import { AdminModule } from './admin/admin.module';
+import { PublicModule } from './public/public.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AdminModule } from './admin/admin.module';
     AgentModule,
     ServiceModule,
     AdminModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -31,4 +31,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsEnum(UserRole, { message: 'Role must be either customer or agent' })
   role?: UserRole;
+
+  @IsOptional()
+  @IsString({ message: 'Profile photo URL must be a string' })
+  profile_photo_url?: string;
 }

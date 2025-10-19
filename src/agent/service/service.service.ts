@@ -8,13 +8,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 
 import { AgentProfile } from '../agent.entity';
-import { Category } from 'src/category/category.entity';
-import { Tag } from 'src/tag/tag.entity';
+import { Category } from 'src/shared/category/category.entity';
+import { Tag } from 'src/shared/tag/tag.entity';
 
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Service } from './service.entity';
-import { ServiceImage } from 'src/service_image/service_image.entity';
+import { ServiceImage } from 'src/shared/service_image/service_image.entity';
 import { AddServiceImageDto } from './dto/add-service-image.dto';
 import { AddServiceTagsDto } from './dto/add-service-tags.dto';
 
@@ -66,7 +66,7 @@ export class ServiceService {
 
     return this.serviceRepo.find({
       where: { agent_id: agent.id },
-      relations: ['images'],
+      relations: ['images', 'category', 'tags'],
       order: { created_at: 'DESC' },
     });
   }

@@ -1,10 +1,10 @@
 import { AgentProfile } from 'src/agent/agent.entity';
-import { Category } from 'src/category/category.entity';
+import { Category } from 'src/shared/category/category.entity';
 import { LocationType } from 'src/common/enums/location-type.enum';
 import { PricingType } from 'src/common/enums/pricing-type.enum';
-import { Review } from 'src/review/review.entity';
-import { ServiceImage } from 'src/service_image/service_image.entity';
-import { Tag } from 'src/tag/tag.entity';
+import { Review } from 'src/shared/review/review.entity';
+import { ServiceImage } from 'src/shared/service_image/service_image.entity';
+import { Tag } from 'src/shared/tag/tag.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,

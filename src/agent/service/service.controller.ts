@@ -18,74 +18,87 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { AddServiceImageDto } from './dto/add-service-image.dto';
 import { AddServiceTagsDto } from './dto/add-service-tags.dto';
 
+interface AuthRequest extends Request {
+  user: { sub: number };
+}
+
 @Controller('agent/services')
 @UseGuards(AuthGuard('jwt'))
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
-  @Post()
-  create(@Req() req: Request, @Body() dto: CreateServiceDto) {
-    const user = req.user as { sub: number };
-    return this.serviceService.create(user.sub, dto);
-  }
-
+  /** ✅ Get all services for the logged-in agent */
   @Get()
-  findAll(@Req() req: Request) {
-    const user = req.user as { sub: number };
-    return this.serviceService.findAllByAgent(user.sub);
+  findAll(@Req() req: AuthRequest) {
+    const userId = req.user.sub;
+    return this.serviceService.findAllByAgent(userId);
   }
 
-  @Get(':id')
-  findOne(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
-    const user = req.user as { sub: number };
-    return this.serviceService.findOneByAgent(user.sub, id);
+  /** Create a new service */
+  @Post()
+  create(@Req() req: AuthRequest, @Body() dto: CreateServiceDto) {
+    const userId = req.user.sub;
+    return this.serviceService.create(userId, dto);
   }
 
-  @Patch(':id')
-  update(
-    @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateServiceDto,
-  ) {
-    const user = req.user as { sub: number };
-    return this.serviceService.update(user.sub, id, dto);
-  }
-
-  @Delete(':id')
-  remove(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
-    const user = req.user as { sub: number };
-    return this.serviceService.remove(user.sub, id);
-  }
-
+  /** Add images to a service */
   @Post(':id/images')
   addImage(
-    @Req() req: Request,
+    @Req() req: AuthRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AddServiceImageDto,
   ) {
-    const user = req.user as { sub: number };
-    return this.serviceService.addImages(user.sub, id, dto);
+    const userId = req.user.sub;
+    return this.serviceService.addImages(userId, id, dto);
   }
 
+  /** Get images for a service */
   @Get(':id/images')
-  getImages(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
-    const user = req.user as { sub: number };
-    return this.serviceService.getImages(user.sub, id);
+  getImages(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+    const userId = req.user.sub;
+    return this.serviceService.getImages(userId, id);
   }
 
+  /** Add tags to a service */
   @Post(':id/tags')
   addTags(
-    @Req() req: Request,
+    @Req() req: AuthRequest,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AddServiceTagsDto,
   ) {
-    const user = req.user as { sub: number };
-    return this.serviceService.addTags(user.sub, id, dto);
+    const userId = req.user.sub;
+    return this.serviceService.addTags(userId, id, dto);
   }
 
+  /** Get tags for a service */
   @Get(':id/tags')
-  getTags(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
-    const user = req.user as { sub: number };
-    return this.serviceService.getTags(user.sub, id);
+  getTags(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+    const userId = req.user.sub;
+    return this.serviceService.getTags(userId, id);
+  }
+
+  /** Get one service by ID */
+  @Get(':id')
+  findOne(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+    const userId = req.user.sub;
+    return this.serviceService.findOneByAgent(userId, id);
+  }
+
+  /** Update a service */
+  @Patch(':id')
+  update(
+    @Req() req: AuthRequest,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateServiceDto,
+  ) {
+    const userId = req.user.sub;
+    return this.serviceService.update(userId, id, dto);
+  }
+
+  /** Delete a service */
+  @Delete(':id')
+  remove(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+    const userId = req.user.sub;
+    return this.serviceService.remove(userId, id);
   }
 }

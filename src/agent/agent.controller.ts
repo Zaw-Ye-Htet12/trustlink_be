@@ -13,9 +13,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { AgentService } from './agent.service';
 import { UpdateAgentDto } from './dto/update-agent.dto';
 import { SubmitVerificationDocumentDto } from './dto/submit-documents.dto';
-import { VerificationDocument } from 'src/verification_docs/verification_docs.entity';
+import { VerificationDocument } from 'src/shared/verification_docs/verification_docs.entity';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { AgentProfileResponse } from './dto/response/agent-profile.dto';
+import { Review } from 'src/shared/review/review.entity';
 
 interface RequestWithUser extends Request {
   user: {
@@ -36,18 +37,12 @@ export class AgentController {
     return this.agentService.getProfile(user.sub);
   }
 
-  // Public: Get specific agent profile
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.agentService.getAgentById(id);
-  }
-
   // Agent: Update my profile
   @Patch('profile')
   async updateProfile(
     @Req() req: RequestWithUser,
     @Body() dto: UpdateAgentDto,
-  ): Promise<AgentProfileResponse> {
+  ): Promise<AgentProfileResponse | null> {
     const user = req.user as { sub: number; role: string };
     return this.agentService.updateProfile(user.sub, dto);
   }
@@ -66,5 +61,23 @@ export class AgentController {
   async getVerificationStatus(@Req() req: RequestWithUser) {
     const user = req.user as { sub: number; role: string };
     return this.agentService.getVerificationStatus(user.sub);
+  }
+
+  @Get('reviews')
+  async getMyReviews(@Req() req: RequestWithUser): Promise<Review[]> {
+    const user = req.user as { sub: number };
+    return this.agentService.getMyReviews(user.sub);
+  }
+
+  @Get('reviews/summary')
+  async getReviewSummary(@Req() req: RequestWithUser) {
+    const user = req.user as { sub: number };
+    return this.agentService.getReviewSummary(user.sub);
+  }
+
+  // Public: Get specific agent profile
+  @Get('profile/:id')
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.agentService.getAgentById(id);
   }
 }

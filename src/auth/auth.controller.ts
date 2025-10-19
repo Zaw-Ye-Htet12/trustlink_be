@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Get,
+  Patch,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -14,6 +15,7 @@ import { Request } from 'express';
 import { RegisterDto } from './dto/register';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { AuthGuard } from '@nestjs/passport';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 // Extend Express Request to include user property
 interface RequestWithUser extends Request {
@@ -60,5 +62,15 @@ export class AuthController {
   async getProfile(@Req() req: RequestWithUser) {
     const user = await this.authService.getCurrentUser(req.user.sub);
     return user;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('change-password')
+  async changePassword(
+    @Req() req: RequestWithUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = req.user;
+    return this.authService.changePassword(user.sub, dto);
   }
 }

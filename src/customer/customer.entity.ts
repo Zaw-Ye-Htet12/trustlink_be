@@ -1,4 +1,4 @@
-import { Review } from 'src/review/review.entity';
+import { Review } from 'src/shared/review/review.entity';
 import { User } from 'src/users/user.entity';
 import {
   Entity,
@@ -23,9 +23,6 @@ export class CustomerProfile {
 
   @Column({ nullable: true, type: 'text' })
   bio: string;
-
-  @Column({ nullable: true })
-  profile_photo_url: string;
 
   @Column({
     name: 'created_at',

@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsEmail } from 'class-validator';
 
 export class UpdateAgentDto {
   @IsOptional()
@@ -19,9 +19,21 @@ export class UpdateAgentDto {
 
   @IsOptional()
   @IsString()
-  profile_photo_url?: string;
+  verification_status?: string;
 
   @IsOptional()
-  @IsString()
-  verification_status?: string;
+  @IsEmail({}, { message: 'Invalid email format' })
+  email?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Username must be a string' })
+  username?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Phone must be a string' })
+  phone_no?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Profile photo URL must be a string' })
+  profile_photo_url?: string;
 }

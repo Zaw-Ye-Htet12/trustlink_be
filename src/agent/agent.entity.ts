@@ -8,8 +8,9 @@ import {
 } from 'typeorm';
 import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 import { User } from 'src/users/user.entity';
-import { Review } from 'src/review/review.entity';
+import { Review } from 'src/shared/review/review.entity';
 import { Service } from './service/service.entity';
+import { VerificationDocument } from 'src/shared/verification_docs/verification_docs.entity';
 
 @Entity('agent_profiles')
 export class AgentProfile {
@@ -39,9 +40,6 @@ export class AgentProfile {
   @Column({ nullable: true })
   service_area: string;
 
-  @Column({ nullable: true })
-  profile_photo_url: string;
-
   @Column({ default: 0 })
   total_reviews: number;
 
@@ -68,4 +66,10 @@ export class AgentProfile {
 
   @OneToMany(() => Review, (review) => review.agent)
   reviews: Review[];
+
+  @OneToMany(
+    () => VerificationDocument,
+    (verificationDocument) => verificationDocument.agent,
+  )
+  verificationDocuments: VerificationDocument[];
 }

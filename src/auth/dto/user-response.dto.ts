@@ -7,4 +7,5 @@ export class UserResponseDto {
   role: UserRole;
   phone_no: string;
   is_active: boolean;
+  profile_photo_url?: string;
 }

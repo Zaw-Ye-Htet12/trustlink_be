@@ -11,7 +11,7 @@ export class VerificationDocumentRepository extends Repository<VerificationDocum
 
   async findByAgentId(agentId: number): Promise<VerificationDocument[]> {
     return this.find({
-      where: { agent_id: agentId },
+      where: { agent: { id: agentId } },
       order: { created_at: 'DESC' },
     });
   }

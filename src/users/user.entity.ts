@@ -29,6 +29,9 @@ export class User {
   @Column({ length: 255 })
   username: string;
 
+  @Column({ nullable: true })
+  profile_photo_url: string;
+
   @Column({ length: 20, nullable: true })
   phone_no: string;
 

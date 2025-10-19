@@ -2,9 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
-  ConflictException,
   InternalServerErrorException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
@@ -12,9 +10,6 @@ import { Repository } from 'typeorm';
 
 import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { UserResponseDto } from 'src/auth/dto/user-response.dto';
 
 import { User } from './user.entity';
 import { CustomerProfile } from 'src/customer/customer.entity';
@@ -93,71 +88,54 @@ export class UserService {
   }
 
   /** ✅ Update user basic info */
-  async update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-  ): Promise<UserResponseDto> {
-    const user = await this.userRepository.findOne({ where: { id } });
+  // async update(
+  //   id: number,
+  //   updateUserDto: UpdateUserDto,
+  // ): Promise<UserResponseDto> {
+  //   const user = await this.userRepository.findOne({ where: { id } });
 
-    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+  //   if (!user) throw new NotFoundException(`User with ID ${id} not found`);
 
-    // Validate email uniqueness
-    if (updateUserDto.email && updateUserDto.email !== user.email) {
-      const existingEmail = await this.userRepository.findByEmail(
-        updateUserDto.email,
-      );
-      if (existingEmail) throw new ConflictException('Email already exists');
-    }
+  //   // Validate email uniqueness
+  //   if (updateUserDto.email && updateUserDto.email !== user.email) {
+  //     const existingEmail = await this.userRepository.findByEmail(
+  //       updateUserDto.email,
+  //     );
+  //     if (existingEmail) throw new ConflictException('Email already exists');
+  //   }
 
-    Object.assign(user, updateUserDto);
-    const updatedUser = await this.userRepository.save(user);
+  //   Object.assign(user, updateUserDto);
+  //   const updatedUser = await this.userRepository.save(user);
 
-    return updatedUser;
-  }
+  //   return updatedUser;
+  // }
 
   /** ✅ Change password securely */
-  async changePassword(
-    userId: number,
-    changePasswordDto: ChangePasswordDto,
-  ): Promise<{ message: string }> {
-    const { currentPassword, newPassword, confirmPassword } = changePasswordDto;
+  // async changePassword(
+  //   userId: number,
+  //   changePasswordDto: ChangePasswordDto,
+  // ): Promise<{ message: string }> {
+  //   const { currentPassword, newPassword, confirmPassword } = changePasswordDto;
 
-    if (newPassword !== confirmPassword) {
-      throw new BadRequestException(
-        'New password and confirm password do not match',
-      );
-    }
+  //   if (newPassword !== confirmPassword) {
+  //     throw new BadRequestException(
+  //       'New password and confirm password do not match',
+  //     );
+  //   }
 
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
+  //   const user = await this.userRepository.findOne({ where: { id: userId } });
+  //   if (!user) throw new NotFoundException('User not found');
 
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password_hash,
-    );
-    if (!isPasswordValid)
-      throw new UnauthorizedException('Current password is incorrect');
+  //   const isPasswordValid = await bcrypt.compare(
+  //     currentPassword,
+  //     user.password_hash,
+  //   );
+  //   if (!isPasswordValid)
+  //     throw new UnauthorizedException('Current password is incorrect');
 
-    user.password_hash = await bcrypt.hash(newPassword, 10);
-    await this.userRepository.save(user);
+  //   user.password_hash = await bcrypt.hash(newPassword, 10);
+  //   await this.userRepository.save(user);
 
-    return { message: 'Password changed successfully' };
-  }
-
-  /** ✅ Deactivate (soft delete) user */
-  async deactivateAccount(userId: number): Promise<{ message: string }> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
-
-    user.is_active = false;
-    await this.userRepository.save(user);
-    return { message: 'Account deactivated' };
-  }
-
-  /** ✅ Delete user permanently (admin use only) */
-  async remove(id: number): Promise<{ message: string }> {
-    const deleted = await this.userRepository.deleteUser(id);
-    if (!deleted) throw new NotFoundException(`User with ID ${id} not found`);
-    return { message: 'User deleted successfully' };
-  }
+  //   return { message: 'Password changed successfully' };
+  // }
 }

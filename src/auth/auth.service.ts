@@ -18,6 +18,7 @@ import { AgentProfile } from '../agent/agent.entity';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RegisterDto } from './dto/register';
 import { UserResponseDto } from './dto/user-response.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -159,5 +160,31 @@ export class AuthService {
     const user = await this.userRepository.findUserById(userId);
     if (!user) throw new ForbiddenException('User not found');
     return user;
+  }
+
+  async changePassword(
+    userId: number,
+    dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.userRepository.findUserById(userId);
+    if (!user) throw new ForbiddenException('User not found');
+
+    const pwMatches = await bcrypt.compare(
+      dto.currentPassword,
+      user.password_hash,
+    );
+    if (!pwMatches)
+      throw new ForbiddenException('Current password is incorrect');
+
+    if (dto.newPassword !== dto.confirmPassword) {
+      throw new BadRequestException(
+        'New password and confirmation do not match',
+      );
+    }
+
+    user.password_hash = await bcrypt.hash(dto.newPassword, 10);
+    await this.userRepository.save(user);
+
+    return { message: 'Password changed successfully' };
   }
 }

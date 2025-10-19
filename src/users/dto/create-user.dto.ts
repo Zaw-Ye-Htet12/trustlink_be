@@ -29,4 +29,8 @@ export class CreateUserDto {
   @IsEnum(UserRole)
   @IsNotEmpty()
   role: UserRole;
+
+  @IsOptional()
+  @IsString()
+  profile_photo_url?: string;
 }

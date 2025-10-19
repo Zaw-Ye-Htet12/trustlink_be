@@ -5,11 +5,11 @@ import { ServiceController } from './service.controller';
 
 // Entities
 import { Service } from './service.entity';
-import { ServiceImage } from 'src/service_image/service_image.entity';
+import { ServiceImage } from 'src/shared/service_image/service_image.entity';
 import { AgentProfile } from 'src/agent/agent.entity';
-import { Category } from 'src/category/category.entity';
-import { Tag } from 'src/tag/tag.entity';
-import { Review } from 'src/review/review.entity';
+import { Category } from 'src/shared/category/category.entity';
+import { Tag } from 'src/shared/tag/tag.entity';
+import { Review } from 'src/shared/review/review.entity';
 
 @Module({
   imports: [
