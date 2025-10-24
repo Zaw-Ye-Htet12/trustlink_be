@@ -6,8 +6,13 @@ import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 import { Category } from 'src/shared/category/category.entity';
 import { Review } from 'src/shared/review/review.entity';
 import { Tag } from 'src/shared/tag/tag.entity';
-import { Repository } from 'typeorm';
-import { SelectQueryBuilder } from 'typeorm/browser';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+
+interface FilterAgentStatsParams {
+  minRating?: number;
+  maxPrice?: number;
+  status?: VerificationStatus;
+}
 
 interface SearchServiceFilters {
   categoryIds?: number[];
@@ -162,11 +167,7 @@ export class PublicService {
     minRating,
     maxPrice,
     status,
-  }: {
-    minRating?: number;
-    maxPrice?: number;
-    status?: VerificationStatus;
-  }) {
+  }: FilterAgentStatsParams): Promise<AgentProfile[]> {
     // ✅ In PublicService.filterAgentsByStats()
     const qb = this.agentRepo
       .createQueryBuilder('agent')
@@ -238,5 +239,102 @@ export class PublicService {
     return this.serviceRepo.find({
       relations: ['category', 'tags', 'agent', 'agent.user', 'agent.reviews'],
     });
+  }
+
+  async getServicesByCategory(categoryId: number): Promise<Service[]> {
+    return this.serviceRepo.find({
+      where: { category: { id: categoryId } },
+      relations: ['category', 'tags', 'agent', 'agent.user', 'agent.reviews'],
+    });
+  }
+
+  async getFeaturedServices(): Promise<Service[]> {
+    return this.serviceRepo.find({
+      where: { agent: { verification_status: VerificationStatus.APPROVED } },
+      take: 10,
+      relations: ['category', 'tags', 'agent', 'agent.user'],
+    });
+  }
+
+  async getFeaturedAgents(): Promise<AgentProfile[]> {
+    return this.agentRepo.find({
+      where: { verification_status: VerificationStatus.APPROVED },
+      order: { reviews: { rating: 'DESC' } },
+      take: 8,
+      relations: ['user', 'services', 'reviews'],
+    });
+  }
+
+  async getTrendingServices(): Promise<Service[]> {
+    return this.serviceRepo
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.agent', 'agent')
+      .leftJoinAndSelect('agent.user', 'user')
+      .leftJoinAndSelect('service.category', 'category')
+      .leftJoinAndSelect('service.tags', 'tags')
+      .orderBy('service.total_reviews', 'DESC')
+      .take(10)
+      .getMany();
+  }
+
+  async getRelatedServices(serviceId: number): Promise<Service[]> {
+    const service = await this.serviceRepo.findOne({
+      where: { id: serviceId },
+      relations: ['category', 'tags'],
+    });
+
+    if (!service || !service.category) {
+      throw new NotFoundException('Service or category not found');
+    }
+
+    return this.serviceRepo
+      .createQueryBuilder('service')
+      .leftJoinAndSelect('service.agent', 'agent')
+      .leftJoinAndSelect('agent.user', 'user')
+      .leftJoinAndSelect('service.category', 'category')
+      .leftJoinAndSelect('service.tags', 'tags')
+      .where('service.category = :categoryId', {
+        categoryId: service.category.id,
+      })
+      .andWhere('service.id != :serviceId', { serviceId })
+      .orderBy('service.total_reviews', 'DESC')
+      .take(6)
+      .getMany();
+  }
+
+  async getServiceReviews(serviceId: number): Promise<Review[]> {
+    return this.reviewRepo.find({
+      where: { service: { id: serviceId } },
+      relations: ['customer', 'customer.user'],
+      order: { created_at: 'DESC' },
+    });
+  }
+
+  async getTopRatedAgents(limit: number): Promise<AgentProfile[]> {
+    return this.agentRepo.find({
+      where: { verification_status: VerificationStatus.APPROVED },
+      order: { reviews: { rating: 'DESC' } },
+      take: limit,
+      relations: ['user', 'services', 'reviews'],
+    });
+  }
+
+  async getPlatformStats() {
+    const [totalAgents, verifiedAgents, totalServices, totalReviews] =
+      await Promise.all([
+        this.agentRepo.count(),
+        this.agentRepo.count({
+          where: { verification_status: VerificationStatus.APPROVED },
+        }),
+        this.serviceRepo.count(),
+        this.reviewRepo.count(),
+      ]);
+
+    return {
+      totalAgents,
+      verifiedAgents,
+      totalServices,
+      totalReviews,
+    };
   }
 }

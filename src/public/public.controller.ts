@@ -63,7 +63,7 @@ export class PublicController {
     });
   }
 
-  @Get('reviews/:agentId')
+  @Get('agents/:agentId/reviews')
   getAgentReviews(@Param('agentId', ParseIntPipe) agentId: number) {
     return this.publicService.getReviewsForAgent(agentId);
   }
@@ -92,5 +92,45 @@ export class PublicController {
   @Get('services')
   getAllServices() {
     return this.publicService.getAllServices();
+  }
+
+  @Get('categories/:id/services')
+  getServicesByCategory(@Param('id', ParseIntPipe) categoryId: number) {
+    return this.publicService.getServicesByCategory(categoryId);
+  }
+
+  @Get('featured/services')
+  getFeaturedServices() {
+    return this.publicService.getFeaturedServices();
+  }
+
+  @Get('featured/agents')
+  getFeaturedAgents() {
+    return this.publicService.getFeaturedAgents();
+  }
+
+  @Get('trending/services')
+  getTrendingServices() {
+    return this.publicService.getTrendingServices();
+  }
+
+  @Get('services/:id/related')
+  getRelatedServices(@Param('id', ParseIntPipe) serviceId: number) {
+    return this.publicService.getRelatedServices(serviceId);
+  }
+
+  @Get('services/:id/reviews')
+  getServiceReviews(@Param('id', ParseIntPipe) serviceId: number) {
+    return this.publicService.getServiceReviews(serviceId);
+  }
+
+  @Get('top/agents')
+  getTopRatedAgents(@Query('limit') limit: number = 10) {
+    return this.publicService.getTopRatedAgents(limit);
+  }
+
+  @Get('platform/stats')
+  getPlatformStats() {
+    return this.publicService.getPlatformStats();
   }
 }
