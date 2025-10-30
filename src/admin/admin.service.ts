@@ -60,7 +60,9 @@ export class AdminService {
 
   /** List all agents */
   async getAllAgents() {
-    return this.agentRepo.find({ relations: ['user'] });
+    return this.agentRepo.find({
+      relations: ['user', 'verificationDocuments'],
+    });
   }
 
   /** Get detailed agent info + documents */
@@ -75,9 +77,9 @@ export class AdminService {
   }
 
   /** Approve agent */
-  async approveAgent(agentId: number, dto: VerifyAgentDto) {
+  async approveAgent(dto: VerifyAgentDto) {
     const agent = await this.agentRepo.findOne({
-      where: { id: agentId },
+      where: { id: dto.agentId },
       relations: ['verificationDocuments'],
     });
     if (!agent) throw new NotFoundException('Agent not found');
@@ -95,9 +97,9 @@ export class AdminService {
   }
 
   /** Reject agent */
-  async rejectAgent(agentId: number, dto: VerifyAgentDto) {
+  async rejectAgent(dto: VerifyAgentDto) {
     const agent = await this.agentRepo.findOne({
-      where: { id: agentId },
+      where: { id: dto.agentId },
       relations: ['verificationDocuments'],
     });
     if (!agent) throw new NotFoundException('Agent not found');
@@ -120,8 +122,8 @@ export class AdminService {
   }
 
   /** Update user status (activate/deactivate) */
-  async updateUserStatus(userId: number, dto: UpdateUserStatusDto) {
-    const user = await this.userRepo.findOne({ where: { id: userId } });
+  async updateUserStatus(dto: UpdateUserStatusDto) {
+    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
     if (!user) throw new NotFoundException('User not found');
 
     user.is_active = dto.is_active;
@@ -138,7 +140,7 @@ export class AdminService {
 
   /** List all verification documents */
   async getAllVerificationDocuments() {
-    return this.verificationRepo.find({ relations: ['agent'] });
+    return this.verificationRepo.find({ relations: ['agent', 'agent.user'] });
   }
 
   /** Get document details */

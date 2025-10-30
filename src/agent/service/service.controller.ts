@@ -17,6 +17,7 @@ import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { AddServiceImageDto } from './dto/add-service-image.dto';
 import { AddServiceTagsDto } from './dto/add-service-tags.dto';
+import { DeleteServiceDTO } from './dto/delete-service.dto';
 
 interface AuthRequest extends Request {
   user: { sub: number };
@@ -96,9 +97,9 @@ export class ServiceController {
   }
 
   /** Delete a service */
-  @Delete(':id')
-  remove(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+  @Delete()
+  remove(@Req() req: AuthRequest, @Body() dto: DeleteServiceDTO) {
     const userId = req.user.sub;
-    return this.serviceService.remove(userId, id);
+    return this.serviceService.remove(userId, dto.serviceId);
   }
 }

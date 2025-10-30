@@ -173,4 +173,16 @@ export class CustomerService {
 
     return this.reviewRepo.remove(review);
   }
+
+  async getMyReviews(userId: number): Promise<Review[]> {
+    const customer = await this.customerRepo.findOne({
+      where: { user: { id: userId } },
+    });
+    if (!customer) throw new NotFoundException('Customer profile not found');
+
+    return this.reviewRepo.find({
+      where: { customer: { id: customer.id } },
+      relations: ['agent', 'service', 'agent.user'],
+    });
+  }
 }

@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { AgentProfile } from 'src/agent/agent.entity';
 import { CustomerProfile } from 'src/customer/customer.entity';
@@ -45,4 +46,7 @@ export class Review {
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updated_at: Date;
 }

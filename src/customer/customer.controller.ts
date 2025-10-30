@@ -15,6 +15,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
+import { DeleteReviewDto } from './dto/delete-review.dto';
 
 interface RequestWithUser extends Request {
   user: { sub: number };
@@ -40,6 +41,11 @@ export class CustomerController {
     return this.customerService.createReview(req.user.sub, dto);
   }
 
+  @Get('reviews')
+  getMyReviews(@Req() req: RequestWithUser) {
+    return this.customerService.getMyReviews(req.user.sub);
+  }
+
   @Patch('reviews/:id')
   updateReview(
     @Req() req: RequestWithUser,
@@ -49,11 +55,8 @@ export class CustomerController {
     return this.customerService.updateReview(req.user.sub, id, dto);
   }
 
-  @Delete('reviews/:id')
-  deleteReview(
-    @Req() req: RequestWithUser,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.customerService.deleteReview(req.user.sub, id);
+  @Delete('reviews')
+  deleteReview(@Req() req: RequestWithUser, @Body() dto: DeleteReviewDto) {
+    return this.customerService.deleteReview(req.user.sub, dto.reviewId);
   }
 }

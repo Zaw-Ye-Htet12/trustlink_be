@@ -41,14 +41,14 @@ export class AdminController {
     return this.adminService.getAgentById(id);
   }
 
-  @Patch('agents/:id/approve')
-  approveAgent(@Param('id') id: number, @Body() dto: VerifyAgentDto) {
-    return this.adminService.approveAgent(id, dto);
+  @Patch('agents/approve')
+  approveAgent(@Body() dto: VerifyAgentDto) {
+    return this.adminService.approveAgent(dto);
   }
 
-  @Patch('agents/:id/reject')
-  rejectAgent(@Param('id') id: number, @Body() dto: VerifyAgentDto) {
-    return this.adminService.rejectAgent(id, dto);
+  @Patch('agents/reject')
+  rejectAgent(@Body() dto: VerifyAgentDto) {
+    return this.adminService.rejectAgent(dto);
   }
 
   @Get('users')
@@ -56,9 +56,9 @@ export class AdminController {
     return this.adminService.getAllUsers();
   }
 
-  @Patch('users/:id/status')
-  updateUserStatus(@Param('id') id: number, @Body() dto: UpdateUserStatusDto) {
-    return this.adminService.updateUserStatus(id, dto);
+  @Patch('users/status')
+  updateUserStatus(@Body() dto: UpdateUserStatusDto) {
+    return this.adminService.updateUserStatus(dto);
   }
 
   @Delete('users/:id')

@@ -220,6 +220,7 @@ export class PublicService {
         'reviews',
         'services.category',
         'services.tags',
+        'services.agent.user',
       ],
     });
     if (!agent) throw new NotFoundException('Agent not found');

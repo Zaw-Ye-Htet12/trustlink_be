@@ -10,4 +10,8 @@ export class UpdateReviewDto {
   @IsOptional()
   @IsString()
   comment?: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
 }
